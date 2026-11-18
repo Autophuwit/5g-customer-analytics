@@ -118,20 +118,4 @@ ax.legend(frameon=False, loc="lower right"); ax.set_xlabel("5G-device users whos
 title(ax, "~2.4M 5G-device users live where 5G is not yet built", "Where to add 5G sites - ranked down to sub-district level in the analysis")
 save(fig, "05_coverage_gap_by_region.png")
 
-# 6) traffic-share anomaly
-a = [.542, .550, .494, .496, .450, .476, .485, .485, .572, .621, .599]
-b = [.402, .407, .393, .401, .386, .290, .187, .162, .182, .174, .178]
-fig, ax = plt.subplots(figsize=(9, 4.4))
-ax.plot(months, a, color=BLUE, lw=2, marker="o", ms=6, markeredgecolor=SURF, markeredgewidth=1.5)
-ax.plot(months, b, color=ORANGE, lw=2, marker="D", ms=6, markeredgecolor=SURF, markeredgewidth=1.5)
-ax.text(10.25, a[-1], f"Brand A  {a[-1]:.0%}", va="center", fontsize=10, color=INK2)
-ax.text(10.25, b[-1], f"Brand B  {b[-1]:.0%}", va="center", fontsize=10, color=INK2)
-ax.axvspan(4.6, 6.4, color="#f6c9c8", alpha=0.5, zorder=0)
-ax.text(5.5, 0.72, "Flagged to Network\n& DWH teams", ha="center", fontsize=9.5, color=INK2)
-ax.set_xlim(-0.3, 12.2); ax.set_ylim(0, 0.8); ax.yaxis.set_major_formatter(PercentFormatter(1, decimals=0))
-ax.grid(axis="y", color=GRID, lw=0.8); ax.set_axisbelow(True)
-ax.set_ylabel("% of 5G users' data carried on 5G"); ax.set_xlabel("Month")
-title(ax, "Monitoring caught a sudden drop in Brand B 5G traffic share",
-      "Postpaid individual 5G users - Brand B fell from 39% (M5) to 16% (M8) while Brand A kept rising")
-save(fig, "06_5g_traffic_anomaly.png")
 print("done")

@@ -127,12 +127,6 @@ The **outliers** are what the network team needs:
 
 Three of the top outliers are **border towns**, which is worth checking for cross-border signal or site configuration issues. The ranked hotspot list is produced as a dedicated network-team extract.
 
-### Data-quality catch
-
-![Anomaly](docs/images/06_5g_traffic_anomaly.png)
-
-While building the monthly 5G performance view, I noticed that Brand B's share of 5G-user traffic carried on 5G fell from **39% to 16%** within three months, while Brand A's kept rising. A shift that sudden is unlikely to be customer behaviour, so I flagged it in the report and raised it with the Network and DWH teams for root-cause investigation.
-
 SQL: [`sql/02_5g_profile_cell_site_prioritisation.sql`](sql/02_5g_profile_cell_site_prioritisation.sql)
 
 ---
