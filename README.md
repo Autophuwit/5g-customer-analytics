@@ -75,7 +75,7 @@ flowchart LR
     S[(Monthly subscriber snapshot<br/>ARPU · AON · device · usage)] --> D[De-duplicate<br/>1 row per subscriber]
     P[(Supplementary packages)] --> F[5G provisioning<br/>active at month end]
     C[(Most-used cell site<br/>last 4 weeks)] --> L
-    M[(Cell-site master)] --> SM[Site master<br/>5G-capable if any cell is 5G ·<br/>modal location code · network priority]
+    M[(Cell-site master)] --> SM[Site master<br/>5G-capable if any cell is 5G ·<br/>modal location code]
     SM --> L[Customer location<br/>region → province → district → sub-district]
     K[(Churn / credit score)] --> PR
     D & F & L --> PR[(5G profile table<br/>funnel flags + measures<br/>per customer)]
@@ -136,7 +136,6 @@ SQL: [`sql/02_5g_profile_cell_site_prioritisation.sql`](sql/02_5g_profile_cell_s
 - **Snapshot de-duplication** with Vertica's `LIMIT 1 OVER (PARTITION BY MNTH_ID, SUBR_ID ORDER BY …)`, keeping one row per subscriber when the monthly snapshot has duplicates.
 - **Site-level 5G flag.** A site has many cells, so `MAX(DECODE(SYSTEM_TYPE,'5G',1,0))` marks the site 5G-capable if any cell is.
 - **Resolving conflicting geography.** Some sites map to several location codes, so each site takes its most frequent code (`LIMIT 1 OVER (… ORDER BY COUNT DESC)`).
-- **Network context.** The upcoming network-priority list (P0/P1/P2 impacted sites) is joined so the business and network teams see the same site status.
 - **One wide profile table, several audiences.** Measures are pre-aggregated per funnel stage (device, provisioned, user: counts, revenue, data). Separate extracts serve the *business* view (ARPU × AON × churn band) and the *network* view (region → sub-district), all from one table.
 
 ### Post-validation (after the load)
