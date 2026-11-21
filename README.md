@@ -138,18 +138,8 @@ SQL: [`sql/02_5g_profile_cell_site_prioritisation.sql`](sql/02_5g_profile_cell_s
 - **Resolving conflicting geography.** Some sites map to several location codes, so each site takes its most frequent code (`LIMIT 1 OVER (… ORDER BY COUNT DESC)`).
 - **Network context.** The upcoming network-priority list (P0/P1/P2 impacted sites) is joined so the business and network teams see the same site status.
 - **One wide profile table, several audiences.** Measures are pre-aggregated per funnel stage (device, provisioned, user: counts, revenue, data). Separate extracts serve the *business* view (ARPU × AON × churn band) and the *network* view (region → sub-district), all from one table.
-- **One definition of a "5G user".** Device, provisioning and usage flags live in one view, [`00_5g_subr_flag_view.sql`](sql/00_5g_subr_flag_view.sql), used by both scripts. Before, the same logic was copied four times, so the HV report and the 5G profile could drift apart after a rule change.
-- **Run month as a parameter.** Both scripts take `RUN_MNTH` (`vsql -v RUN_MNTH=202512 …`) instead of month numbers hard-coded in several places, so a scheduler can run and back-fill them unchanged.
 
-### Production safety
-
-`AUTO_5G_PROFILE` is read by the business and network extracts. The script used to `DROP` it first and rebuild it, so a failed or empty run left the extracts with no table. It now:
-
-1. builds `AUTO_5G_PROFILE_NEW` (including the cell-site coverage update),
-2. checks it is not empty and has at least 90% of the current table's rows — otherwise the guard query fails and the script stops (`ON_ERROR_STOP`),
-3. swaps the tables in one `ALTER TABLE … RENAME` statement, keeping last month as `AUTO_5G_PROFILE_OLD` for a quick roll-back.
-
-### Data quality
+### Post-validation (after the load)
 
 [`sql/dq_checks.sql`](sql/dq_checks.sql) runs after the load and returns PASS / FAIL per check, plus an *OK TO PUBLISH / HOLD* summary:
 
@@ -160,8 +150,6 @@ SQL: [`sql/02_5g_profile_cell_site_prioritisation.sql`](sql/02_5g_profile_cell_s
 | **Location** | ≤ 5% of active subscribers without a most-used cell site; ≤ 1% of sites missing from the site master |
 | **5G flags** | ≤ 1% of 5G users without a 5G-device flag; profile flags equal the shared view |
 | **Drift** | Active base ±5% and 5G-user share ±3pp vs last month — a sudden move is more often a feed or network change than customer behaviour |
-
-**What I'd improve next:** replace the `DVC_SUPPORT LIKE '%5G%'` device rule with a maintained device-capability dimension, and materialise the 5G flag view as a monthly table if it becomes slow.
 
 ---
 
@@ -176,7 +164,7 @@ SQL: [`sql/02_5g_profile_cell_site_prioritisation.sql`](sql/02_5g_profile_cell_s
     ├── 00_5g_subr_flag_view.sql              # shared 5G flag definition
     ├── 01_high_value_report_5g_parameter.sql
     ├── 02_5g_profile_cell_site_prioritisation.sql
-    └── dq_checks.sql                         # data-quality checks per month
+    └── dq_checks.sql                         # post-validation checks per month
 ```
 
 **Tools:** SQL (Vertica: analytic `LIMIT … OVER`, window functions, MPP segmentation) · Excel (pivot-based reporting)
